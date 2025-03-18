@@ -1,0 +1,169 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+}
+
+#atm-container { 
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+#atm-img-container {
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+#atm-img {
+  height: 100%;
+}
+/* atm screen buttons and screen */
+.atm-left-buttons, .atm-right-buttons {
+  display: flex;
+  flex-direction: column;
+  height: 21%;
+  width: 5%;
+  position: absolute;
+  justify-content: space-around;
+  gap: 8%;
+}
+
+.atm-left-buttons{
+  top: 31.7%;
+  left: 24.5%;
+}
+
+.atm-right-buttons{
+  top: 31.8%;
+  right: 40.3%;
+} 
+
+.screen-button{
+  height: 13%;
+  width: 50%;
+  background-color: #cfcfcf;
+}
+
+.screen-button:hover{
+  background-color: grey;
+  cursor: pointer;
+}
+
+#atm-screen{
+  position: absolute;
+  height: 23%;
+  width: 24.2%;
+  top: 31%;
+  left: 28.8%;
+  background-color: blue;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Prevents overflow */
+}
+
+/* Keypad */
+
+#keypad { 
+  position: absolute;
+  height: 10%;
+  width: 17%;
+  top: 60%;
+  left: 31%;
+  display: grid;
+  grid-template-areas: 
+   "button1 button2 button3 cancel cancel"
+   "button4 button5 button6 clear clear"
+   "button7 button8 button9 . ."
+   ". button0  . ok  ok "
+   ;
+  
+  background-color: grey;
+  padding: 0.5%;
+  gap:4%;
+  column-gap: 3%;
+  row-gap: 8%;
+  font-size: 1.2vh;
+  text-align: center;
+  padding-left: 1.4%;
+}
+
+#keypad-button1{
+  grid-area: button1;
+  background-color: azure;
+}
+#keypad-button2{
+  grid-area: button2;
+  background-color: azure;
+}
+#keypad-button3{
+  grid-area: button3;
+  background-color: azure;
+}
+#keypad-button4{
+  grid-area: button4;
+  background-color: azure;
+}
+#keypad-button5{
+  grid-area: button5;
+  background-color: azure;
+}
+#keypad-button6{
+  grid-area: button6;
+  background-color: azure;
+}
+#keypad-button7{
+  grid-area: button7;
+  background-color: azure;
+}
+#keypad-button8{
+  grid-area: button8;
+  background-color: azure;
+}
+#keypad-button9{
+  grid-area: button9;
+  background-color: azure;
+}
+#keypad-button0{
+  grid-area: button0;
+  background-color: azure;
+}
+#keypad-cancel-button{
+  background-color: red;
+  width: 70%;
+  justify-self: center;
+  grid-area: cancel;
+}
+#keypad-clear-button{
+  background-color: yellow;
+  width: 70%;
+  justify-self: center;
+  grid-area: clear;
+}
+#keypad-ok-button{
+  background-color: green;
+  width: 70%;
+  justify-self: center;
+  grid-area: ok;
+}
+
+.keypad-button, .keypad-special-button{
+  cursor: pointer;
+}
+
+.keypad-button{
+  height: 100%;
+}
+
+#welcome-logo{
+  width: 70%;
+}
