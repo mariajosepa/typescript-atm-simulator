@@ -1,0 +1,55 @@
+/* Welcome Screen */
+#welcome-logo{
+  width: 50%;
+}
+
+.atm-title{
+  font-size: 2vh;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  min-width: max-content;
+}
+
+.start-screen{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* enter pin */
+
+#pin-lines{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 1vh;
+
+}
+
+.pin-box{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+.pin-box p{
+  font-size: 3vh;
+  line-height: .2;
+}
+
+.pin-box-line{
+  font-size: 3vh;
+  line-height: .2;
+}
+
+.pin-instruction{
+  font-size: 2vh;
+}
+
+#atm-screen.enter-pin{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3.4vh;
+}

@@ -1,0 +1,17 @@
+#debit{
+  height: 12vh;
+  position: absolute;
+  top: 1vh;
+  left: 2vw;
+  cursor: grab;
+}
+
+.card-transform{
+  transform: rotateX(75deg) rotateZ(90deg);
+  top: 100%;
+  
+}
+#debit.card-transform{
+  top: -250%;
+  left: -10%;
+}

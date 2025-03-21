@@ -12,10 +12,11 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 #atm-img-container {
-  height: 90vh;
+  height: 79vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -68,35 +69,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden; /* Prevents overflow */
+  overflow: hidden;
+
 }
 
 /* Keypad */
 
 #keypad { 
   position: absolute;
-  height: 10%;
-  width: 17%;
-  top: 60%;
-  left: 31%;
+  height: 11%;
+  width: 16%;
+  top: 59%;
+  left: 31.9%;
   display: grid;
   grid-template-areas: 
    "button1 button2 button3 cancel cancel"
    "button4 button5 button6 clear clear"
    "button7 button8 button9 . ."
-   ". button0  . ok  ok "
-   ;
-  
+   ". button0  . ok  ok ";
   background-color: grey;
   padding: 0.5%;
   gap:4%;
   column-gap: 3%;
   row-gap: 8%;
-  font-size: 1.2vh;
+  font-size: 1.1vh;
   text-align: center;
   padding-left: 1.4%;
 }
-
 #keypad-button1{
   grid-area: button1;
   background-color: azure;
@@ -155,15 +154,32 @@
   justify-self: center;
   grid-area: ok;
 }
-
 .keypad-button, .keypad-special-button{
   cursor: pointer;
+  border-radius: 5%;
 }
-
 .keypad-button{
   height: 100%;
 }
 
-#welcome-logo{
-  width: 70%;
+/* Money slot */
+
+#atm-img-money-slot-body
+{
+  position: absolute;
+  height: 17%;
+  width: 15%;
+  left: 62.5%;
+  top: 53%;
+  background-color: grey;
+  display: flex;
+  align-items: center;
+}
+#atm-img-money-slot{
+  position: relative;
+  height: 10%;
+  width: 90%;
+  background-color: black;
+  margin: 0 auto;
+
 }
