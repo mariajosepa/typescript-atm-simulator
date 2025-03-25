@@ -35,11 +35,15 @@ export class ATM implements IATM {
       account.balance -= amount;
       this.cashLimit -= amount;
       message.success = true;
-      message.status = "Withdrawing money..."
+      message.status = "Money withdrawn! Please take your money"
     }
     else if (amount > this.cashLimit){
       message.success = false;
       message.status = "ATM has insufficient funds"
+    }
+    else if (amount > account.balance){
+      message.success = false;
+      message.status = "You have insufficient funds"
     }
     return message
   }

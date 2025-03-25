@@ -45,6 +45,8 @@
 
 .pin-instruction{
   font-size: 2vh;
+  text-align: center;
+  padding: .5em;
 }
 
 #atm-screen.enter-pin{
@@ -52,4 +54,110 @@
   flex-direction: column;
   align-items: center;
   gap: 3.4vh;
+}
+
+/* options display */
+
+#atm-screen.show-options {
+  display: grid;
+  grid-template-areas: 
+   "option1 option5"
+   "option2 option6"
+   "option3 option7 "
+   "option4 option8";
+   grid-auto-columns: 1fr;
+   row-gap: 1%;
+   column-gap: 3em;
+}
+
+.screen-option{
+  width: 100%;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 1.3vh;
+  text-align: left;
+  align-content: center;
+  padding-left: 3%;
+  height: 55%;
+  border-radius: 3px;
+  background-color: greenyellow;
+}
+
+.screen-option.no-show{
+  background-color: blue;
+}
+
+#screen-option1{
+  grid-area: option1;
+}
+#screen-option2{
+  grid-area: option2;
+}
+#screen-option3{
+  grid-area: option3;
+}
+#screen-option4{
+  grid-area: option4;
+}
+#screen-option5{
+  grid-area: option5;
+}
+#screen-option6{
+  grid-area: option6;
+}
+#screen-option7{
+  grid-area: option7;
+}
+#screen-option8{
+  grid-area: option8;
+}
+/* confirm screen */
+#confirm-text{
+  position: absolute;
+  left: 15%;
+  top: 20%;
+  margin-right: 15%;
+  font-size: 2vh;
+  color: black;
+  background-color: greenyellow;
+}
+/* loader screen */
+#loading-text{
+  position: absolute;
+  left: 15%;
+  top: 20%;
+  margin-right: 15%;
+  font-size: 2vh;
+  color: black;
+  background-color: greenyellow;
+}
+/* error screen */
+#error-text{
+  position: absolute;
+  left: 15%;
+  top: 20%;
+  margin-right: 15%;
+  font-size: 2vh;
+  color: black;
+  background-color: rgb(255, 179, 47);
+}
+/* success screen */
+#sucess-text{
+  position: absolute;
+  left: 15%;
+  top: 20%;
+  margin-right: 15%;
+  font-size: 2vh;
+  color: black;
+  background-color: greenyellow;;
+}
+/* remove card screen */
+#remove-card-text{
+  position: absolute;
+  left: 15%;
+  top: 20%;
+  margin-right: 15%;
+  font-size: 2vh;
+  color: black;
+  background-color: greenyellow;;
+
 }

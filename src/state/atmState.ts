@@ -4,6 +4,11 @@ export enum ATMState {
   Menu,
   ViewingBalance,
   Withdrawing,
+  WithdrawingConfirm,
+  WithdrawingMoney,
+  SuccessfulOperation,
+  FailedOperation,
+  RemoveCard,
   Depositing,
   SessionEnded
 }

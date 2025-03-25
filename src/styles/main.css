@@ -28,24 +28,25 @@
   height: 100%;
 }
 /* atm screen buttons and screen */
-.atm-left-buttons, .atm-right-buttons {
+#atm-left-buttons, #atm-right-buttons {
   display: flex;
   flex-direction: column;
   height: 21%;
   width: 5%;
   position: absolute;
   justify-content: space-around;
+  align-items: center;
   gap: 8%;
 }
 
-.atm-left-buttons{
+#atm-left-buttons{
   top: 31.7%;
-  left: 24.5%;
+  left: 23.2%;
 }
 
-.atm-right-buttons{
+#atm-right-buttons{
   top: 31.8%;
-  right: 40.3%;
+  right: 41.6%;
 } 
 
 .screen-button{
@@ -163,8 +164,7 @@
 }
 
 /* Money slot */
-
-#atm-img-money-slot-body
+#atm-img-card-slot-body
 {
   position: absolute;
   height: 17%;
@@ -175,7 +175,7 @@
   display: flex;
   align-items: center;
 }
-#atm-img-money-slot{
+#atm-img-card-slot{
   position: relative;
   height: 10%;
   width: 90%;
@@ -183,3 +183,4 @@
   margin: 0 auto;
 
 }
+

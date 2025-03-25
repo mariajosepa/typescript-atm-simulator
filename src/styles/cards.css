@@ -1,5 +1,5 @@
 #debit{
-  height: 12vh;
+  height: 10vh;
   position: absolute;
   top: 1vh;
   left: 2vw;
@@ -12,6 +12,6 @@
   
 }
 #debit.card-transform{
-  top: -250%;
-  left: -10%;
+  top: -210%;
+  left: -1%;
 }

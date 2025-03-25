@@ -1,0 +1,47 @@
+#bill {
+  height: 14vh;
+  position: absolute;
+  top: -1vh;
+  left: 60vw;
+  cursor: grab; 
+
+}
+
+#atm-img-money-slot-body{
+  position: absolute;
+  height: 7vh;
+  width: 33.5vh;
+  top: 75%;
+  left: 25.6%;
+  border-radius: 3px;
+  background-color: gray;
+  text-align: center;
+  align-content: center;
+  color: white;
+  font-size: 2vh;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#atm-img-money-slot{
+  position: relative;
+  margin-left: 1vh;
+  margin-right: 1vh;
+  background-color: grey;
+}
+
+#atm-img-money-slot.open{
+  background-color: black;
+}
+
+#atm-img-money-slot-body.open{
+  color: black;
+}
+
+#new-bills{
+  cursor: pointer;
+  position: absolute;
+  top: 70%;
+  left: 27%;
+  height: 20vh;
+  transform: rotateX(50deg);
+}
