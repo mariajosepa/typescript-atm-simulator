@@ -6,9 +6,8 @@ import './dragAndDrop'
 import { depositState } from './state/depositState';
 import { ATM } from './atm'
 import { ATMState, onATMStateChange, setATMState, currentATMState } from './state/atmState'
-import { clearPin, extractValueOptions } from './util'
+import { clearCustom, clearPin,extractNumberfromString } from './util'
 import { Account } from './account'
-
 
 const atmScreen = document.getElementById('atm-screen') as HTMLDivElement;
 const keypad = document.getElementById('keypad') as HTMLDivElement;
@@ -16,19 +15,21 @@ const leftScreenButtons = document.getElementById('atm-left-buttons') as HTMLDiv
 const rightScreenButtons = document.getElementById('atm-right-buttons') as HTMLDivElement;
 const atmBody = document.getElementById('atm-img-container');
 
-
 const beepSound = new Audio('/assets/key_beep.mp3');
 let pressedKey : string  = ''; 
 let enteredPin : string = '';
+let enteredCustom : string = '';
 let selectedAmount : string = '';
 let textToDisplay : string = '';
 let autoClose : boolean = false;
+let returnToMenu : boolean = false;
 
 type ATMMenuKey = keyof typeof ATMState;
 const leftScreenButtonOptions : Partial<Record<ATMMenuKey, string[]>> = {
   Menu : ['View Balance','Withdraw','Deposit','Exit'],
   Withdrawing : ['$20', '$40', '$60', ''],
   WithdrawingConfirm : ['','','','yes'],
+  WithdrawingCustom : ['','','',''],
   DepositingConfirm : ['','','','yes']
 
 }
@@ -36,10 +37,19 @@ const rightScreenButtonOptions : Partial<Record<ATMMenuKey, string[]>> = {
   Menu : ['','','',''],
   Withdrawing : ['$100', '$200', 'other', 'back'],
   WithdrawingConfirm : ['','','','cancel'],
+  WithdrawingCustom : ['','','','back'],
   DepositingConfirm : ['','','','cancel']
 }
 
-const myATM = new ATM(10000,10000,10000);
+const atm = {
+  withdrawLimit: 1000,
+  depositLimit : 1000,
+  availableCash : 20000,
+  minimumWithdraw : 20,
+
+}
+
+const myATM = new ATM(atm);
 const myAccount : Account = {
   pin: '1234',
   balance: 10000
@@ -76,6 +86,18 @@ keypad?.addEventListener('click', (event) => {
         }
     }
     
+  }
+  else if(currentATMState === ATMState.WithdrawingCustom){
+    //type value
+    enterCustom(pressedKey);
+    const targetId = (event.target as HTMLDivElement).id
+    
+    if(targetId === 'keypad-ok-button'){
+      selectedAmount = enteredCustom;
+      enteredCustom = '';
+      setATMState(ATMState.WithdrawingMoney);
+    }
+  
   } 
 }
 );
@@ -86,8 +108,11 @@ leftScreenButtons?.addEventListener('click',(e) => {
   
     //Main Menu
     if(currentATMState === ATMState.Menu){
-      if(targetId === 'screen-button2' ){
-        console.log('switching to withdrawing');
+      if(targetId === 'screen-button1' ){
+        setATMState(ATMState.Withdrawing);
+
+      }
+      else if(targetId === 'screen-button2' ){
         setATMState(ATMState.Withdrawing);
 
       }
@@ -107,7 +132,7 @@ leftScreenButtons?.addEventListener('click',(e) => {
           targetId === 'screen-button3'
         ){
                   
-        let index = extractValueOptions(targetId) - 1;
+        let index = extractNumberfromString(targetId) - 1;
         selectedAmount = leftScreenButtonOptions['Withdrawing']?.[index] ?? '';
         setATMState(ATMState.WithdrawingConfirm);
       }
@@ -133,13 +158,15 @@ rightScreenButtons?.addEventListener('click',(e) => {
               targetId === 'screen-button6'
             ){
     
-            let index = extractValueOptions(targetId) - 5;
+            let index = extractNumberfromString(targetId) - 5;
             selectedAmount = rightScreenButtonOptions['Withdrawing']?.[index] ?? '';
-            setTimeout(() => {
-              setATMState(ATMState.WithdrawingConfirm);
-            }, 0);
-            //setATMState(ATMState.WithdrawingConfirm);
+            setATMState(ATMState.WithdrawingConfirm);
             
+          }
+          //Custom value input
+          else if(targetId === 'screen-button7'){
+            setATMState(ATMState.WithdrawingCustom);
+
           }
           //go back to main menu
           else if(targetId === 'screen-button8'){
@@ -151,6 +178,12 @@ rightScreenButtons?.addEventListener('click',(e) => {
             setATMState(ATMState.Withdrawing);
           }
         }
+        else if(currentATMState === ATMState.WithdrawingCustom){
+          if( targetId === 'screen-button8'){
+            enteredCustom = '';
+            setATMState(ATMState.Withdrawing);
+          }
+        }
         else if(currentATMState === ATMState.DepositingConfirm){
           if( targetId === 'screen-button8'){
             setATMState(ATMState.FailedDeposit);
@@ -158,8 +191,6 @@ rightScreenButtons?.addEventListener('click',(e) => {
         }
 
       }
-     
-
 })
 atmBody?.addEventListener('click', (e) => {
   const target = e.target as HTMLElement;
@@ -186,29 +217,32 @@ onATMStateChange((state) => {
   }
   //show menu options
   else if(state === ATMState.Menu){
-    atmScreen.classList.add('show-options');
     showOptions('Menu');
   }
   //Withdraw money
   else if(state === ATMState.Withdrawing){
-    atmScreen.classList.add('show-options');
     showOptions('Withdrawing');
   }
+  else if(state === ATMState.WithdrawingCustom){
+    inputCustomValue();
+    showOptions('WithdrawingCustom');
+  }
   else if(state === ATMState.WithdrawingConfirm){
-     atmScreen.classList.add('show-options');
      showOptions('WithdrawingConfirm');
      showMessage(`Are you sure you want to withdraw ${selectedAmount}?`, 'confirm-text');
   }
   else if (state === ATMState.WithdrawingMoney){
     showMessage('Withdrawing money...','loading-text');
     setTimeout(() => {
-      const result = myATM.withdraw(2000, myAccount);
-      autoClose = false; // we don't remove card until user removes card
+      const result = myATM.withdraw(parseInt(selectedAmount), myAccount);
+      
       if (result.success) {
+        autoClose = false; // we don't remove card until user removes card
         openMoneySlotWithdraw();
         textToDisplay = result.status;
         setATMState(ATMState.SuccessfulOperation);
       } else {
+        returnToMenu = true; // we don't remove card until user removes card
         textToDisplay = result.status;
         setATMState(ATMState.FailedOperation);
       }
@@ -226,7 +260,6 @@ onATMStateChange((state) => {
     },3000);
   }
   else if(state === ATMState.DepositingConfirm){
-    atmScreen.classList.add('show-options');
     closeMoneySlotDeposit();
     showOptions('DepositingConfirm');
     showMessage(`Are you sure you want to deposit $${depositState.amount}`,'confirm-text');
@@ -264,12 +297,15 @@ onATMStateChange((state) => {
     }
   }
   else if (state === ATMState.FailedOperation){
-    atmScreen.classList.add('show-options');
-    showOptions('FailedOperation');
     showMessage(textToDisplay, 'error-text');
     if (autoClose){
       setTimeout(()=>{
         setATMState(ATMState.RemoveCard)
+      },2000)
+    }
+    else if(returnToMenu){
+      setTimeout(()=>{
+        setATMState(ATMState.Menu)
       },2000)
     }
   }
@@ -278,7 +314,7 @@ onATMStateChange((state) => {
   }
 })
 
-//show Pin Lines
+//show pin Lines
 const showPinlines = () => {
   let pinBoxesHTML = '';
     // Generate 4 pin-boxes dynamically
@@ -295,49 +331,36 @@ const showPinlines = () => {
       <div id="pin-lines">
         ${pinBoxesHTML}
       </div>
-      <p class="pin-instruction">Enter your 4-digit PIN, then press OK</p>
+      <p class="pin-instruction">Enter your 4-digit PIN, then press [ ok ]</p>
     `;
 }
-//welcome message
+//show welcome message
 const welcome = () => {
-  console.log('Hey guys');
-    const welcomeLogo = document.createElement('img');
-    const startMessage = document.createElement('h1');
-    welcomeLogo.src = '/assets/logo.png';
-    welcomeLogo.id = 'welcome-logo';
-    startMessage.classList.add('atm-title');
-    startMessage.textContent = 'Insert card';
-  
-    atmScreen.append(welcomeLogo);
-    atmScreen.append(startMessage);
+  const welcomeLogo = document.createElement('img');
+  const startMessage = document.createElement('h1');
+  welcomeLogo.src = '/assets/logo.png';
+  welcomeLogo.id = 'welcome-logo';
+  startMessage.classList.add('atm-title');
+  startMessage.textContent = 'Insert card';
+
+  atmScreen.append(welcomeLogo);
+  atmScreen.append(startMessage);
 }
-//enter pin
-const enterPin = (num : string) => {
-  if (isNaN(Number(num))){
-    if(num === 'clear'){
-      enteredPin = '';
-      clearPin();
-    }
-    else if(num === 'cancel'){
-      enteredPin = '';
-      clearPin();
-      setATMState(ATMState.RemoveCard);
-    }
-    return
-  }
-  //insert asterisks
-  if (enteredPin.length < 4){
-    let insertSpot = enteredPin.length;
-    enteredPin += num;
-    console.log(enteredPin);
-    const pinLines = document.getElementById('pin-lines');
-    if (pinLines){
-      pinLines.children[insertSpot].children[0].innerHTML = '*';
-    }
-  }
+//show input custom value
+const inputCustomValue = () => {
+  const input = document.createElement('div');
+  const message = document.createElement('p');
+  input.id = 'custom-value-input';
+  message.id = 'custom-value-input-message';
+  message.textContent = 'Enter your value, then press [ ok ]';
+
+  atmScreen.append(input);
+  atmScreen.append(message);
 }
 //show screen options depending on Atm state
 const showOptions = (key : ATMMenuKey) => {
+
+    atmScreen.classList.add('show-options');
 
     leftScreenButtonOptions[key]?.forEach((text,index)=>{
       let option = document.createElement('div');
@@ -397,7 +420,7 @@ const closeMoneySlot = () => {
   }
   newBill?.remove();
 }
-
+//open money slot for a deposit
 const openMoneySlotDeposit = () => {
   const moneySlot = document.getElementById('atm-img-money-slot');
   const moneySlotBody = document.getElementById('atm-img-money-slot-body');
@@ -406,7 +429,7 @@ const openMoneySlotDeposit = () => {
     moneySlotBody.classList.add('open');
   }
 }
-
+//close money slot after depositing money
 const closeMoneySlotDeposit = () => {
   const moneySlot = document.getElementById('atm-img-money-slot');
   const moneySlotBody = document.getElementById('atm-img-money-slot-body');
@@ -415,5 +438,55 @@ const closeMoneySlotDeposit = () => {
     moneySlotBody.classList.remove('open');
   }
 }
+//enter pin
+const enterPin = (num : string) => {
+  if (isNaN(Number(num))){
+    if(num === 'clear'){
+      enteredPin = '';
+      clearPin();
+    }
+    else if(num === 'cancel'){
+      enteredPin = '';
+      clearPin();
+      setATMState(ATMState.RemoveCard);
+    }
+    return
+  }
+  //insert asterisks
+  if (enteredPin.length < 4){
+    let insertSpot = enteredPin.length;
+    enteredPin += num;
+    console.log(enteredPin);
+    const pinLines = document.getElementById('pin-lines');
+    if (pinLines){
+      pinLines.children[insertSpot].children[0].innerHTML = '*';
+    }
+  }
+}
+//enter custom value
+const enterCustom = (num : string) => {
+  if (isNaN(Number(num))){
+    if(num === 'clear'){
+      enteredCustom = '';
+      clearCustom();
+    }
+    else if(num === 'cancel'){
+      enteredCustom = '';
+      clearCustom();
+      setATMState(ATMState.RemoveCard);
+    }
+    return
+  }
+  else {
+    //insert asterisks
+    if (enteredCustom.length < 4){
+      enteredCustom += num;
+      console.log(enteredCustom);
+      const inputBox = document.getElementById('custom-value-input') as HTMLDivElement;
+      inputBox.innerText = enteredCustom;
+     
+    }
 
-
+  }
+  
+}

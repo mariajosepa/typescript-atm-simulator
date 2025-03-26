@@ -8,19 +8,12 @@ export function clearPin() : void {
     }
   }
 }
-export function extractValueOptions(id : string) : number {
-
-  const match = id.match(/\d+/); // finds one or more digits
-  
-  if (match) {
-    const number = parseInt(match[0], 10);
-    return number
-  }
-
-  return 0
-
+export function clearCustom() : void {
+  const input = document.getElementById('custom-value-input') as HTMLDivElement;
+  input.innerText = '';
 }
-export function parseMoneyValue(moneyString : string) : number {
+
+export function extractNumberfromString(moneyString : string) : number {
   const match = moneyString.match(/\d+/);
   const amount = match ? parseInt(match[0], 10) : 0;
   return amount

@@ -1,5 +1,5 @@
 import {ATMState, setATMState, currentATMState} from './state/atmState'
-import { parseMoneyValue } from './util'
+import { extractNumberfromString } from './util'
 import { depositState } from './state/depositState';
 const cardDebit = document.getElementById('debit');
 const cardSlotBody = document.getElementById('atm-img-card-slot-body');
@@ -74,7 +74,7 @@ billSlotBody?.addEventListener('drop', (e)=>{
     let isValidDrag = draggedId === 'bill100' || 'bill300' || 'bill1000';
 
     if (billSlotBody?.contains(dropTarget) && isValidDrag && draggedId){
-      depositState.amount = parseMoneyValue(draggedId).toString();
+      depositState.amount = extractNumberfromString(draggedId).toString();
       setATMState(ATMState.DepositingConfirm);
 
     }
