@@ -30,7 +30,8 @@ const leftScreenButtonOptions : Partial<Record<ATMMenuKey, string[]>> = {
   Withdrawing : ['$20', '$40', '$60', ''],
   WithdrawingConfirm : ['','','','yes'],
   WithdrawingCustom : ['','','',''],
-  DepositingConfirm : ['','','','yes']
+  DepositingConfirm : ['','','','yes'],
+  ViewingBalance : ['','','',''],
 
 }
 const rightScreenButtonOptions : Partial<Record<ATMMenuKey, string[]>> = {
@@ -38,7 +39,8 @@ const rightScreenButtonOptions : Partial<Record<ATMMenuKey, string[]>> = {
   Withdrawing : ['$100', '$200', 'other', 'back'],
   WithdrawingConfirm : ['','','','cancel'],
   WithdrawingCustom : ['','','','back'],
-  DepositingConfirm : ['','','','cancel']
+  DepositingConfirm : ['','','','cancel'],
+  ViewingBalance : ['','','','back'],
 }
 
 const atm = {
@@ -62,6 +64,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 //add functionality to keypad, depending on screen state
 keypad?.addEventListener('click', (event) => {
   const target = event.target as HTMLDivElement;
+  const targetId = (event.target as HTMLDivElement).id
+        
   if (target.classList.contains('keypad-button') || target.classList.contains('keypad-special-button')) {
     beepSound.play(); //add key beep
     pressedKey = target.textContent?.trim() ?? ''; //save immediately pressed key
@@ -73,8 +77,6 @@ keypad?.addEventListener('click', (event) => {
     //check pin
     if (enteredPin.length === 4){
 
-        const targetId = (event.target as HTMLDivElement).id
-        
         if(targetId === 'keypad-ok-button'){
           let isCorrect = myATM.checkPin(enteredPin,myAccount);
           if (isCorrect){
@@ -90,14 +92,17 @@ keypad?.addEventListener('click', (event) => {
   else if(currentATMState === ATMState.WithdrawingCustom){
     //type value
     enterCustom(pressedKey);
-    const targetId = (event.target as HTMLDivElement).id
     
     if(targetId === 'keypad-ok-button'){
       selectedAmount = enteredCustom;
       enteredCustom = '';
       setATMState(ATMState.WithdrawingMoney);
     }
-  
+  }
+  else if(currentATMState === ATMState.ViewingBalance){
+    if(targetId === 'keypad-ok-button'){
+      setATMState(ATMState.RemoveCard);
+    }
   } 
 }
 );
@@ -109,8 +114,7 @@ leftScreenButtons?.addEventListener('click',(e) => {
     //Main Menu
     if(currentATMState === ATMState.Menu){
       if(targetId === 'screen-button1' ){
-        setATMState(ATMState.Withdrawing);
-
+        setATMState(ATMState.CheckingBalance);
       }
       else if(targetId === 'screen-button2' ){
         setATMState(ATMState.Withdrawing);
@@ -152,8 +156,12 @@ leftScreenButtons?.addEventListener('click',(e) => {
 rightScreenButtons?.addEventListener('click',(e) => {
       if(e.target){
         const targetId = (e.target as HTMLDivElement).id;
-          //Withdraw money
-        if(currentATMState === ATMState.Withdrawing){
+        if(currentATMState === ATMState.ViewingBalance){
+          if(targetId === 'screen-button8'){
+            setATMState(ATMState.Menu);
+          }
+        }
+        else if(currentATMState === ATMState.Withdrawing){
           if( targetId === 'screen-button5' ||
               targetId === 'screen-button6'
             ){
@@ -218,6 +226,17 @@ onATMStateChange((state) => {
   //show menu options
   else if(state === ATMState.Menu){
     showOptions('Menu');
+  }
+  else if(state === ATMState.CheckingBalance){
+    showMessage('Consulting balance...','loading-text');
+    setTimeout(()=> {
+      setATMState(ATMState.ViewingBalance);
+    },2000);
+
+  }
+  else if(state === ATMState.ViewingBalance){
+    showOptions('ViewingBalance');
+    viewBalance();
   }
   //Withdraw money
   else if(state === ATMState.Withdrawing){
@@ -357,6 +376,21 @@ const inputCustomValue = () => {
   atmScreen.append(input);
   atmScreen.append(message);
 }
+
+const viewBalance = ()=>{
+
+  const balanceDisplay = document.createElement('div');
+  const message = document.createElement('p');
+  balanceDisplay.id = 'account-balance-display';
+  balanceDisplay.textContent = myAccount.balance.toString();
+  message.id = 'account-balance-display-message';
+  message.textContent = 'Viewing balance, when you are done, press [ ok ]';
+
+  atmScreen.append(balanceDisplay);
+  atmScreen.append(message);
+
+}
+
 //show screen options depending on Atm state
 const showOptions = (key : ATMMenuKey) => {
 
@@ -388,7 +422,7 @@ const showOptions = (key : ATMMenuKey) => {
       atmScreen.appendChild(option);
     })
 }
-//Generic message
+//show message
 const showMessage = (text : string, id : string) => {
   let message = document.createElement('p');
   message.id = id
@@ -490,3 +524,4 @@ const enterCustom = (num : string) => {
   }
   
 }
+

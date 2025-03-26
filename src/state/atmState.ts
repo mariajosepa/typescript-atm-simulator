@@ -2,6 +2,7 @@ export enum ATMState {
   WaitingForCard,
   EnteringPin,
   Menu,
+  CheckingBalance,
   ViewingBalance,
   Withdrawing,
   WithdrawingCustom,
