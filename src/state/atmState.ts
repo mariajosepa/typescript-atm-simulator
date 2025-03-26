@@ -10,6 +10,10 @@ export enum ATMState {
   FailedOperation,
   RemoveCard,
   Depositing,
+  DepositingProcessing,
+  DepositingConfirm,
+  DepositingMoney,
+  FailedDeposit,
   SessionEnded
 }
 
@@ -22,7 +26,11 @@ export function onATMStateChange(callback: ATMStateListener) {
 
 export function renderScreen(){
   const atmScreen = document.getElementById('atm-screen');
-  if (atmScreen) atmScreen.innerHTML = ''; // update content
+  if (atmScreen) {
+    atmScreen.innerHTML = ''; // update content
+    atmScreen.classList = '';
+
+  }
   }
 // Shared variable to hold the current state
 export let currentATMState: ATMState = ATMState.WaitingForCard;
@@ -31,9 +39,8 @@ export let currentATMState: ATMState = ATMState.WaitingForCard;
 export function setATMState(newState : ATMState) : void {
   renderScreen();
   currentATMState = newState;
-  console.log("ATM state is now:", ATMState[currentATMState]);
   listeners.forEach(listener => listener(currentATMState));
-  
+  console.log("ATM state is now:", ATMState[currentATMState]);
 }
 
 

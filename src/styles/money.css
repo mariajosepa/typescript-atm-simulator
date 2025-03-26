@@ -1,10 +1,18 @@
-#bill {
-  height: 14vh;
+#bill-container{
+  display: flex;
+  flex-direction: row;
+  width: 70vw;
   position: absolute;
-  top: -1vh;
-  left: 60vw;
-  cursor: grab; 
+  top: -9%;
+  left: 40%;
+  cursor: grab;
+  width: 20%;
+  height: 30%;
+}
 
+.bill-stack{
+  width: 100%;
+  height: 100%;
 }
 
 #atm-img-money-slot-body{
