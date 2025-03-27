@@ -118,11 +118,9 @@ leftScreenButtons?.addEventListener('click',(e) => {
       }
       else if(targetId === 'screen-button2' ){
         setATMState(ATMState.Withdrawing);
-
       }
       else if(targetId === 'screen-button3'){
         setATMState(ATMState.Depositing);
-
       }
       else if(targetId === 'screen-button4'){
         setATMState(ATMState.RemoveCard);
@@ -253,7 +251,7 @@ onATMStateChange((state) => {
   else if (state === ATMState.WithdrawingMoney){
     showMessage('Withdrawing money...','loading-text');
     setTimeout(() => {
-      const result = myATM.withdraw(parseInt(selectedAmount), myAccount);
+      const result = myATM.withdraw(extractNumberfromString(selectedAmount), myAccount);
       
       if (result.success) {
         autoClose = false; // we don't remove card until user removes card
@@ -261,7 +259,7 @@ onATMStateChange((state) => {
         textToDisplay = result.status;
         setATMState(ATMState.SuccessfulOperation);
       } else {
-        returnToMenu = true; // we don't remove card until user removes card
+        returnToMenu = true; 
         textToDisplay = result.status;
         setATMState(ATMState.FailedOperation);
       }
