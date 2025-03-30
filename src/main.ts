@@ -7,6 +7,7 @@ import { depositState } from './state/depositState';
 import { ATM } from './atm'
 import { ATMState, onATMStateChange, setATMState, currentATMState } from './state/atmState'
 import { clearCustom, clearPin,extractNumberfromString } from './util'
+import { cardState } from './state/cardState'
 import { Account } from './account'
 
 const atmScreen = document.getElementById('atm-screen') as HTMLDivElement;
@@ -18,11 +19,26 @@ const atmBody = document.getElementById('atm-img-container');
 const beepSound = new Audio('/assets/key_beep.mp3');
 let pressedKey : string  = ''; 
 let enteredPin : string = '';
+let chosenNewPin : string = '';
+let enteredNewPin : string = '';
 let enteredCustom : string = '';
 let selectedAmount : string = '';
 let textToDisplay : string = '';
 let autoClose : boolean = false;
 let returnToMenu : boolean = false;
+let pinAttempts : number = 0;
+
+const atm = {
+  withdrawLimit: 1000,
+  depositLimit : 1000,
+  availableCash : 20000,
+  minimumWithdraw : 20,
+}
+const myATM = new ATM(atm);
+const myAccount : Account = {
+  pin: '1234',
+  balance: 10000
+}
 
 type ATMMenuKey = keyof typeof ATMState;
 const leftScreenButtonOptions : Partial<Record<ATMMenuKey, string[]>> = {
@@ -30,37 +46,24 @@ const leftScreenButtonOptions : Partial<Record<ATMMenuKey, string[]>> = {
   Withdrawing : ['$20', '$40', '$60', ''],
   WithdrawingConfirm : ['','','','yes'],
   WithdrawingCustom : ['','','',''],
+  Depositing : ['','','',''],
   DepositingConfirm : ['','','','yes'],
   ViewingBalance : ['','','',''],
 
 }
 const rightScreenButtonOptions : Partial<Record<ATMMenuKey, string[]>> = {
-  Menu : ['','','',''],
+  Menu : ['Change pin','','',''],
   Withdrawing : ['$100', '$200', 'other', 'back'],
   WithdrawingConfirm : ['','','','cancel'],
   WithdrawingCustom : ['','','','back'],
+  Depositing : ['','','','back'],
   DepositingConfirm : ['','','','cancel'],
   ViewingBalance : ['','','','back'],
-}
-
-const atm = {
-  withdrawLimit: 1000,
-  depositLimit : 1000,
-  availableCash : 20000,
-  minimumWithdraw : 20,
-
-}
-
-const myATM = new ATM(atm);
-const myAccount : Account = {
-  pin: '1234',
-  balance: 10000
 }
 //welcome logo
 document.addEventListener('DOMContentLoaded',()=>{
   setATMState(ATMState.WaitingForCard);
 })
-
 //add functionality to keypad, depending on screen state
 keypad?.addEventListener('click', (event) => {
   const target = event.target as HTMLDivElement;
@@ -71,7 +74,7 @@ keypad?.addEventListener('click', (event) => {
     pressedKey = target.textContent?.trim() ?? ''; //save immediately pressed key
   }
 
-  if(currentATMState === ATMState.EnteringPin){
+  if(currentATMState === ATMState.EnteringPin || currentATMState === ATMState.CheckingPin){
     //enter pin
     enterPin(pressedKey);
     //check pin
@@ -79,13 +82,36 @@ keypad?.addEventListener('click', (event) => {
 
         if(targetId === 'keypad-ok-button'){
           let isCorrect = myATM.checkPin(enteredPin,myAccount);
-          if (isCorrect){
-            setTimeout(()=>{console.log('That is correct');setATMState(ATMState.Menu);enteredPin = '';},1000);
+          enteredPin = '';
+          if (isCorrect && !cardState.isBlocked){
+            if (currentATMState === ATMState.EnteringPin){
+              pinAttempts = 0;
+              setATMState(ATMState.Menu);
+            }
+            else if (currentATMState === ATMState.CheckingPin){
+              pinAttempts = 0;
+              setATMState(ATMState.EnteringNewPin);
+            }
           }
           else{
-            setTimeout(()=>{console.log("WRONG PING MY GUY");clearPin();enteredPin = '';},1000)
+            if (cardState.isBlocked){
+              enteredPin = '';
+              pinAttempts = 0;
+              setATMState(ATMState.BlockedCard);
+            }
+            else if(pinAttempts >= 2){
+              cardState.isBlocked = true;
+              enteredPin = '';
+              pinAttempts = 0;
+              setATMState(ATMState.BlockedCard);
+            }else{
+              clearPin();
+              enteredPin = '';
+              pinAttempts++;
+            }
+            
           }
-        }
+      }
     }
     
   }
@@ -102,6 +128,30 @@ keypad?.addEventListener('click', (event) => {
   else if(currentATMState === ATMState.ViewingBalance){
     if(targetId === 'keypad-ok-button'){
       setATMState(ATMState.RemoveCard);
+    }
+  }
+  else if(currentATMState === ATMState.EnteringNewPin){
+    console.log('chosenNewPin',chosenNewPin);
+    enterNewPin(pressedKey);
+    if(targetId === 'keypad-ok-button'){
+      if (enteredNewPin.length === 4){
+        if(chosenNewPin !== ''){
+          if (enteredNewPin !== chosenNewPin){
+            enteredNewPin = '';
+            textToDisplay = 'Pins do not match, please try again';
+            autoClose = false;
+            returnToMenu = true;
+            setATMState(ATMState.FailedOperation);
+          }
+          else{
+            setATMState(ATMState.ChangePin);
+          }
+        }else{
+          chosenNewPin = enteredNewPin;
+          setATMState(ATMState.EnteringNewPin);
+        }
+        enteredNewPin = '';
+      }
     }
   } 
 }
@@ -154,7 +204,14 @@ leftScreenButtons?.addEventListener('click',(e) => {
 rightScreenButtons?.addEventListener('click',(e) => {
       if(e.target){
         const targetId = (e.target as HTMLDivElement).id;
-        if(currentATMState === ATMState.ViewingBalance){
+
+        if(currentATMState === ATMState.Menu){
+          if(targetId === 'screen-button5'){
+            setATMState(ATMState.CheckingPin);
+          }
+
+        }
+        else if(currentATMState === ATMState.ViewingBalance){
           if(targetId === 'screen-button8'){
             setATMState(ATMState.Menu);
           }
@@ -195,6 +252,12 @@ rightScreenButtons?.addEventListener('click',(e) => {
             setATMState(ATMState.FailedDeposit);
           }
         }
+        else if(currentATMState === ATMState.Depositing){
+          if( targetId === 'screen-button8'){
+            setATMState(ATMState.Menu);
+            closeMoneySlotDeposit();
+          }
+        }
 
       }
 })
@@ -205,7 +268,6 @@ atmBody?.addEventListener('click', (e) => {
     setATMState(ATMState.RemoveCard);
   }
 });
-
 // main screen flow
 onATMStateChange((state) => {
   //show start screen
@@ -219,11 +281,50 @@ onATMStateChange((state) => {
   else if (state === ATMState.EnteringPin){
     atmScreen.className = '';
     atmScreen.classList.add('enter-pin');
-    showPinlines();
+    showPinlines('Enter your 4-digit PIN, then press [ ok ]');
   }
   //show menu options
   else if(state === ATMState.Menu){
     showOptions('Menu');
+  }
+  else if(state === ATMState.CheckingPin){
+    atmScreen.className = '';
+    atmScreen.classList.add('enter-pin');
+    showPinlines('Enter your 4-digit PIN to proceed, then press [ ok ]');
+  }
+  else if(state === ATMState.EnteringNewPin){
+    atmScreen.className = '';
+   if (chosenNewPin !== ''){
+    inputNewPin('Re-enter your new 4-digit PIN, then press [ ok ]');
+   }
+   else{
+    inputNewPin('Enter your new 4-digit PIN, then press [ ok ]');
+
+   }
+    
+  }
+  else if(state === ATMState.ChangePin){
+    showMessage('Changing pin...','loading-text');
+    setTimeout(() => {
+      const result = myATM.changePin(chosenNewPin, myAccount);
+      autoClose = true;
+      returnToMenu = false;
+      chosenNewPin = '';
+      if (result.success) {
+        textToDisplay = result.status;
+        setATMState(ATMState.SuccessfulOperation);
+      } else {
+        textToDisplay = result.status;
+        setATMState(ATMState.FailedOperation);
+      }
+    }, 5000);
+  }
+  else if(state === ATMState.BlockedCard){
+    atmScreen.className = '';
+    showMessage('Your card has been blocked, please contact your bank', 'error-text');
+    setTimeout(()=>{
+      setATMState(ATMState.RemoveCard);
+    },3000);
   }
   else if(state === ATMState.CheckingBalance){
     showMessage('Consulting balance...','loading-text');
@@ -268,6 +369,7 @@ onATMStateChange((state) => {
   }
   else if(state === ATMState.Depositing){
     showMessage('Deposit your money in the slot','confirm-text');
+    showOptions('Depositing');
     openMoneySlotDeposit();
   }
   else if(state === ATMState.DepositingProcessing){
@@ -294,7 +396,6 @@ onATMStateChange((state) => {
         setATMState(ATMState.FailedOperation);
       }
     }, 5000);
-
   }
   else if(state === ATMState.FailedDeposit){
     showMessage('Cancelling deposit...', 'error-text');
@@ -330,9 +431,8 @@ onATMStateChange((state) => {
     showMessage('Thank you! Please remove your card', 'sucess-text');
   }
 })
-
 //show pin Lines
-const showPinlines = () => {
+const showPinlines = (message: string) => {
   let pinBoxesHTML = '';
     // Generate 4 pin-boxes dynamically
     for (let i = 0; i < 4; i++) {
@@ -348,7 +448,7 @@ const showPinlines = () => {
       <div id="pin-lines">
         ${pinBoxesHTML}
       </div>
-      <p class="pin-instruction">Enter your 4-digit PIN, then press [ ok ]</p>
+      <p class="pin-instruction">${message}</p>
     `;
 }
 //show welcome message
@@ -374,7 +474,17 @@ const inputCustomValue = () => {
   atmScreen.append(input);
   atmScreen.append(message);
 }
+//show input new pin 
+const inputNewPin = (text : string) => {
+  const input = document.createElement('div');
+  const message = document.createElement('p');
+  input.id = 'custom-pin-input';
+  message.id = 'custom-pin-input-message';
+  message.textContent = text;
 
+  atmScreen.append(input);
+  atmScreen.append(message);
+}
 const viewBalance = ()=>{
 
   const balanceDisplay = document.createElement('div');
@@ -388,7 +498,6 @@ const viewBalance = ()=>{
   atmScreen.append(message);
 
 }
-
 //show screen options depending on Atm state
 const showOptions = (key : ATMMenuKey) => {
 
@@ -520,6 +629,32 @@ const enterCustom = (num : string) => {
     }
 
   }
-  
+}
+//enter new pin
+const enterNewPin = (num : string) => {
+  if (isNaN(Number(num))){
+    if(num === 'clear'){
+      enteredNewPin = '';
+      clearCustom();
+    }
+    else if(num === 'cancel'){
+      enteredNewPin = '';
+      clearCustom();
+      setATMState(ATMState.Menu);
+    }
+    return
+  }
+  else {
+    //insert asterisks
+    if (enteredNewPin.length < 4){
+      enteredNewPin += num;
+      console.log(enteredNewPin);
+      const inputBox = document.getElementById('custom-pin-input') as HTMLDivElement;
+      inputBox.innerText = enteredNewPin;
+    
+    }
+
+  }
+
 }
 

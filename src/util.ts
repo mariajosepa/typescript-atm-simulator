@@ -12,6 +12,10 @@ export function clearCustom() : void {
   const input = document.getElementById('custom-value-input') as HTMLDivElement;
   input.innerText = '';
 }
+export function clearCustomPin() : void {
+  const input = document.getElementById('custom-pin-input') as HTMLDivElement;
+  input.innerText = '';
+}
 
 export function extractNumberfromString(moneyString : string) : number {
   const match = moneyString.match(/\d+/);

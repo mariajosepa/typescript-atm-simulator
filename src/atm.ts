@@ -40,7 +40,7 @@ export class ATM implements IATM {
     if (account.balance >= amount && 
       amount <= this.withdrawLimit && 
       amount <= this.availableCash &&
-      amount % 20 === 0
+      amount % 20 === 0 //clase equivalencia
     ){
       account.balance -= amount;
       this.availableCash -= amount;
@@ -80,6 +80,26 @@ export class ATM implements IATM {
       this.availableCash += amount;
       message.success = true;
       message.status = "Money Deposited !"
+    }
+
+    return message
+
+  }
+
+  public changePin(newPin : string, account : Account) : IMessage{
+
+    let message : IMessage = {
+      success : true,
+      status : "Pin Updated !",
+    }
+    if (newPin === account.pin){
+      message.success = false;
+      message.status = "Pin must be different than the current one !"
+    }else if(newPin.length !== 4){
+      message.success = false;
+      message.status = "The pin must be 4 digits"
+    }else{
+      account.pin = newPin;
     }
 
     return message
