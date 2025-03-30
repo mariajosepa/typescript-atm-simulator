@@ -131,7 +131,6 @@ keypad?.addEventListener('click', (event) => {
     }
   }
   else if(currentATMState === ATMState.EnteringNewPin){
-    console.log('chosenNewPin',chosenNewPin);
     enterNewPin(pressedKey);
     if(targetId === 'keypad-ok-button'){
       if (enteredNewPin.length === 4){
@@ -597,7 +596,6 @@ const enterPin = (num : string) => {
   if (enteredPin.length < 4){
     let insertSpot = enteredPin.length;
     enteredPin += num;
-    console.log(enteredPin);
     const pinLines = document.getElementById('pin-lines');
     if (pinLines){
       pinLines.children[insertSpot].children[0].innerHTML = '*';
@@ -622,7 +620,6 @@ const enterCustom = (num : string) => {
     //insert asterisks
     if (enteredCustom.length < 4){
       enteredCustom += num;
-      console.log(enteredCustom);
       const inputBox = document.getElementById('custom-value-input') as HTMLDivElement;
       inputBox.innerText = enteredCustom;
      
@@ -648,7 +645,6 @@ const enterNewPin = (num : string) => {
     //insert asterisks
     if (enteredNewPin.length < 4){
       enteredNewPin += num;
-      console.log(enteredNewPin);
       const inputBox = document.getElementById('custom-pin-input') as HTMLDivElement;
       inputBox.innerText = enteredNewPin;
     
