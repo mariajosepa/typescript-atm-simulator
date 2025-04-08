@@ -1,5 +1,5 @@
-import { ATM } from './atm';
-import { Account } from './account';
+import { ATM } from '../atm';
+import { Account } from '../account';
 
 const atmConfig = {
   withdrawLimit: 1000,
