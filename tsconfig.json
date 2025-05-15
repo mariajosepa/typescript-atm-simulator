@@ -20,5 +20,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "src/**/*.mp3"]
+  "include": ["src", "src/**/*.mp3","src/tests"]
 }

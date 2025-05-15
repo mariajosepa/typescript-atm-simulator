@@ -654,3 +654,5 @@ const enterNewPin = (num : string) => {
 
 }
 
+(window as any).__atm__ = myATM;
+(window as any).__account__ = myAccount;
