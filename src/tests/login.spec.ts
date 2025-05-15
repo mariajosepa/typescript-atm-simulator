@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 
-const BASE_URL = '/';
+const BASE_URL = 'http://localhost:5173/';
 
 async function enterPin(page: Page, pin: string) {
   for (const digit of pin) {
@@ -48,12 +48,35 @@ test.describe('ATM Login Scenarios', () => {
     await expect(page.locator('.pin-instruction')).toHaveText(/Enter your 4-digit PIN/);
   });
 
-  test.skip('TC-ATM-003 - Tarjeta inválida', async () => {
-    // No hay lógica implementada para múltiples tarjetas
-  });
+ // <-- Cierra el bloque de test.describe
 
-  test.skip('TC-ATM-004 - PIN correcto con tarjeta inválida', async () => {
-    // Requiere simulación de más de una tarjeta
+test('TC-ATM-003 - Tarjeta inválida', async ({ page }) => {
+  // Inyectamos cuenta nula antes de cargar la app
+  await page.addInitScript(() => {
+    // @ts-ignore
+    window.__account__ = null;
   });
+  await page.goto(BASE_URL);
+
+  // Verificamos que la pantalla indique error de tarjeta inválida
+  await expect(page.locator('#atm-screen'))
+    .toContainText(/invalid|error|tarjeta inválida|insert card/i);
+});
+
+test('TC-ATM-004 - PIN correcto con tarjeta inválida', async ({ page }) => {
+  // Igual: cuenta nula desde el arranque
+  await page.addInitScript(() => {
+    // @ts-ignore
+    window.__account__ = null;
+  });
+  await page.goto(BASE_URL);
+
+  // Intentamos ingresar PIN aunque no haya tarjeta
+  await enterPin(page, '1234');
+
+  // La pantalla vuelve a pedir “Insert card”
+  await expect(page.locator('#atm-screen'))
+    .toContainText(/insert card|invalid|error|tarjeta inválida/i);
+});
 
 });
