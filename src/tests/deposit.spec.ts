@@ -15,106 +15,50 @@ async function goToDepositMenu(page: Page) {
   await page.locator('#screen-button3').click(); // Deposit
 }
 
-test.describe('ATM Deposit Scenarios', () => {
+const testCases = [
+  { id: 'TC-DP-01 - Rechazar saldo negativo 1', balance: -1, amount: 100, expectAllow: false },
+  { id: 'TC-DP-02 - Rechazar saldo negativo 2', balance: -1, amount: 300, expectAllow: false },
+  { id: 'TC-DP-03 - Rechazar saldo negativo 2', balance: -1, amount: 1000, expectAllow: false },
+  { id: 'TC-DP-04 - Aceptar deposito medio 1', balance: 2, amount: 300, expectAllow: true },
+  { id: 'TC-DP-05 - Aceptar deposito maximo 1', balance: 2, amount: 1000, expectAllow: true },
+  { id: 'TC-DP-06 - Aceptar deposito minimo 1', balance: 2, amount: 100, expectAllow: true },
+  { id: 'TC-DP-07 - Aceptar deposito maximo 2', balance: 0, amount: 1000, expectAllow: true },
+  { id: 'TC-DP-08 - Aceptar deposito minimo 2', balance: 0, amount: 100, expectAllow: true },
+  { id: 'TC-DP-09 - Aceptar deposito medio 2', balance: 0, amount: 300, expectAllow: true },
+  { id: 'TC-DP-10 - Aceptar deposito minimo 3', balance: 100, amount: 100, expectAllow: true },
+  { id: 'TC-DP-11 - Aceptar deposito medio 3', balance: 100, amount: 300, expectAllow: true },
+  { id: 'TC-DP-12 - Aceptar maximo 3', balance: 100, amount: 1000, expectAllow: true },
+  { id: 'TC-DP-13 - Aceptar deposito medio 4', balance: 200, amount: 300, expectAllow: true },
+  { id: 'TC-DP-14 - Aceptar deposito minimo 4', balance: 200, amount: 100, expectAllow: true },
+  { id: 'TC-DP-15 - Aceptar deposito maximo 3', balance: 200, amount: 1000, expectAllow: true },
+];
+
+test.describe('ATM Deposit Scenarios - Full Matrix', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(BASE_URL);
   });
 
-  test('TC-DP-01 - Rechazar depósito con saldo negativo', async ({ page }) => {
-    await page.evaluate(() => {
-      window.__account__.balance = -1;
-    });
-    await goToDepositMenu(page);
-    await page.locator('#bill100').dragTo(page.locator('#atm-img-money-slot-body'));
-    await page.waitForTimeout(1000);
-    await page.locator('#screen-button4').click(); // yes
-    await page.waitForTimeout(6000);
-    await expect(page.locator('#atm-screen')).toContainText(/money deposited/i);
-  });
+  for (const { id, balance, amount, expectAllow } of testCases) {
+    test(`${id} - Deposit $${amount} with balance $${balance} → ${expectAllow ? 'ALLOW' : 'DENY'}`, async ({ page }) => {
+      await page.evaluate((bal) => {
+        window.__account__.balance = bal;
+      }, balance);
 
-  test('TC-DP-02 - Depósito permitido con saldo positivo ($300)', async ({ page }) => {
-    await page.evaluate(() => {
-      window.__account__.balance = 2;
-    });
-    await goToDepositMenu(page);
-    await page.locator('#bill300').dragTo(page.locator('#atm-img-money-slot-body'));
-    await page.waitForTimeout(1000);
-    await page.locator('#screen-button4').click(); // yes
-    await page.waitForTimeout(6000);
-    await expect(page.locator('#atm-screen')).toContainText(/money deposited/i);
-  });
+      await goToDepositMenu(page);
 
-  test('TC-DP-03 - Depósito de $1000 con saldo bajo', async ({ page }) => {
-    await page.evaluate(() => {
-      window.__account__.balance = 2;
-    });
-    await goToDepositMenu(page);
-    await page.locator('#bill1000').dragTo(page.locator('#atm-img-money-slot-body'));
-    await page.waitForTimeout(1000);
-    await page.locator('#screen-button4').click(); // yes
-    await page.waitForTimeout(6000);
-    await expect(page.locator('#atm-screen')).toContainText(/money deposited/i);
-  });
+      await page.locator(`#bill${amount}`).dragTo(page.locator('#atm-img-money-slot-body'));
+      await page.waitForTimeout(1000);
+      await page.locator('#screen-button4').click();
+      await page.waitForTimeout(6000);
 
-  test('TC-DP-04 - Depósito mínimo con saldo bajo ($100)', async ({ page }) => {
-    await page.evaluate(() => {
-      window.__account__.balance = 2;
+      const screen = page.locator('#atm-screen');
+      if (expectAllow) {
+        await expect(screen).toContainText(/money deposited/i);
+      } else {
+        await expect(screen).not.toContainText(/money deposited/i);
+      }
     });
-    await goToDepositMenu(page);
-    await page.locator('#bill100').dragTo(page.locator('#atm-img-money-slot-body'));
-    await page.waitForTimeout(1000);
-    await page.locator('#screen-button4').click();
-    await page.waitForTimeout(6000);
-    await expect(page.locator('#atm-screen')).toContainText(/money deposited/i);
-  });
-
-  test('TC-DP-05 - Depósito de $1000 con saldo cero', async ({ page }) => {
-    await page.evaluate(() => {
-      window.__account__.balance = 0;
-    });
-    await goToDepositMenu(page);
-    await page.locator('#bill1000').dragTo(page.locator('#atm-img-money-slot-body'));
-    await page.waitForTimeout(1000);
-    await page.locator('#screen-button4').click();
-    await page.waitForTimeout(6000);
-    await expect(page.locator('#atm-screen')).toContainText(/money deposited/i);
-  });
-
-  test('TC-DP-06 - Depósito de $300 con saldo cero', async ({ page }) => {
-    await page.evaluate(() => {
-      window.__account__.balance = 0;
-    });
-    await goToDepositMenu(page);
-    await page.locator('#bill300').dragTo(page.locator('#atm-img-money-slot-body'));
-    await page.waitForTimeout(1000);
-    await page.locator('#screen-button4').click();
-    await page.waitForTimeout(6000);
-    await expect(page.locator('#atm-screen')).toContainText(/money deposited/i);
-  });
-
-  test('TC-DP-07 - Depósito mínimo con saldo cero', async ({ page }) => {
-    await page.evaluate(() => {
-      window.__account__.balance = 0;
-    });
-    await goToDepositMenu(page);
-    await page.locator('#bill100').dragTo(page.locator('#atm-img-money-slot-body'));
-    await page.waitForTimeout(1000);
-    await page.locator('#screen-button4').click();
-    await page.waitForTimeout(6000);
-    await expect(page.locator('#atm-screen')).toContainText(/money deposited/i);
-  });
-
-  test('TC-DP-08 - Depósito máximo con saldo bajo', async ({ page }) => {
-    await page.evaluate(() => {
-      window.__account__.balance = 100;
-    });
-    await goToDepositMenu(page);
-    await page.locator('#bill1000').dragTo(page.locator('#atm-img-money-slot-body'));
-    await page.waitForTimeout(1000);
-    await page.locator('#screen-button4').click();
-    await page.waitForTimeout(6000);
-    await expect(page.locator('#atm-screen')).toContainText(/money deposited/i);
-  });
+  }
 
 });
